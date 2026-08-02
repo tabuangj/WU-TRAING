@@ -1,0 +1,1291 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Broadcast Board — Workshop Crisis & Talent Exchange</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Kanit:wght@400;600;700;800&family=IBM+Plex+Sans+Thai:wght@400;500;600&family=JetBrains+Mono:wght@500;700&display=swap');
+
+  :root{
+    --bg:#10141B; --bg-grid:#161B24; --panel:#181E29; --panel-2:#202736;
+    --line:#2A3342; --text:#E9ECF1; --muted:#8B93A3;
+    --amber:#F5A623; --red:#E4572E; --teal:#2FBF9F; --blue:#6C8EAD; --green:#5DDC79; --gold:#FFD700; --purple:#A855F7;
+  }
+  *{ box-sizing:border-box; }
+  html,body{ margin:0; padding:0; height:100%; }
+  body{
+    background:
+      linear-gradient(var(--bg-grid) 1px, transparent 1px) 0 0/100% 42px,
+      linear-gradient(90deg, var(--bg-grid) 1px, transparent 1px) 0 0/42px 100%,
+      var(--bg);
+    color:var(--text); font-family:'IBM Plex Sans Thai',sans-serif;
+    min-height:100vh; overflow-x:hidden; position:relative;
+  }
+  .mono{ font-family:'JetBrains Mono',monospace; }
+
+  /* ===== Topbar ===== */
+  .topbar{
+    display:flex; align-items:center; justify-content:space-between;
+    padding:16px 30px; border-bottom:1px solid var(--line); background:rgba(16,20,27,0.8); backdrop-filter:blur(8px);
+    position:relative; z-index:10;
+  }
+  .brand{ display:flex; align-items:center; gap:12px; }
+  .brand-dot{ width:12px; height:12px; border-radius:50%; background:var(--green);
+    box-shadow:0 0 0 4px rgba(93,220,121,.15); animation:pulse 1.8s ease-in-out infinite; }
+  .brand-dot.alert{ background:var(--red); box-shadow:0 0 0 4px rgba(228,87,46,.3); animation:pulseFast .4s ease-in-out infinite; }
+  @keyframes pulse{ 0%,100%{opacity:1;} 50%{opacity:.35;} }
+  @keyframes pulseFast{ 0%,100%{opacity:1;} 50%{opacity:.2;} }
+  .brand-title{ font-family:'Kanit',sans-serif; font-weight:800; font-size:22px; letter-spacing:.5px; text-transform:uppercase; color:#FFF; }
+  .brand-sub{ font-family:'JetBrains Mono',monospace; font-size:11px; color:var(--muted); letter-spacing:1.5px; }
+  .top-right{ display:flex; align-items:center; gap:16px; }
+  .clock{ font-family:'JetBrains Mono',monospace; font-size:20px; color:var(--muted); }
+  .icon-btn{
+    width:42px; height:42px; border-radius:10px; border:1px solid var(--line);
+    background:var(--panel-2); color:var(--text); cursor:pointer; font-size:18px;
+    display:flex; align-items:center; justify-content:center; transition:all .15s;
+  }
+  .icon-btn:hover{ border-color:var(--amber); transform:scale(1.05); }
+  .icon-btn.active{ border-color:var(--teal); color:var(--teal); }
+
+  /* ===== Injected Dividend Overlay Banner ===== */
+  .dividend-banner {
+    position: fixed; top: 80px; left: 50%; transform: translateX(-50%);
+    width: 90%; max-width: 850px;
+    background: linear-gradient(135deg, #0e2922 0%, #174237 100%);
+    border: 2px solid var(--teal); border-radius: 16px;
+    padding: 20px 26px; box-shadow: 0 16px 50px rgba(47,191,159,0.4);
+    z-index: 100; display: none;
+    animation: slideDown 0.4s cubic-bezier(0.18, 0.89, 0.32, 1.28) forwards;
+  }
+  @keyframes slideDown {
+    from { transform: translate(-50%, -50px); opacity: 0; }
+    to { transform: translate(-50%, 0); opacity: 1; }
+  }
+  .dividend-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px; }
+  .dividend-tag {
+    font-family: 'Kanit', sans-serif; font-weight: 800; font-size: 13px;
+    letter-spacing: 1.5px; color: #10141B; background: var(--teal);
+    padding: 4px 12px; border-radius: 20px; text-transform: uppercase;
+  }
+  .close-dividend {
+    background: rgba(255,255,255,0.1); border: 1px solid rgba(255,255,255,0.2);
+    color: var(--text); border-radius: 6px; padding: 4px 10px; cursor: pointer; font-size: 12px;
+  }
+  .close-dividend:hover { background: rgba(255,255,255,0.2); }
+  .dividend-title { font-family: 'Kanit', sans-serif; font-weight: 800; font-size: 26px; color: #FFF; margin-bottom: 6px; }
+  .dividend-desc { font-size: 16px; color: #B2EBF2; line-height: 1.4; }
+  .dividend-timer-box {
+    margin-top: 14px; padding: 10px 16px; background: rgba(0,0,0,0.3); border-radius: 10px;
+    border: 1px solid rgba(47,191,159,0.3); display: flex; align-items: center; justify-content: space-between;
+  }
+  .dividend-timer-label { font-size: 14px; color: var(--text); font-weight: 600; }
+  .dividend-timer-val { font-family: 'JetBrains Mono', monospace; font-size: 28px; font-weight: 700; color: var(--gold); }
+
+  /* ===== Main Stage ===== */
+  .stage{
+    max-width:1100px; margin:0 auto; padding:30px 24px 20px;
+    display:flex; flex-direction:column; align-items:center; text-align:center;
+  }
+  .stage-label{ font-family:'JetBrains Mono',monospace; font-size:13px; letter-spacing:2px;
+    color:var(--muted); text-transform:uppercase; margin-bottom:14px; }
+
+  .ring-wrap{ position:relative; width:220px; height:220px; margin-bottom:6px; }
+  svg{ transform:rotate(-90deg); }
+  .ring-bg{ fill:none; stroke:var(--panel-2); stroke-width:10; }
+  .ring-fg{ fill:none; stroke:var(--amber); stroke-width:10; stroke-linecap:round;
+    transition:stroke-dashoffset 1s linear, stroke .3s; }
+  .ring-fg.critical{ stroke:var(--red); }
+  .ring-center{ position:absolute; inset:0; display:flex; flex-direction:column; align-items:center; justify-content:center; }
+  .ring-center .t{ font-family:'JetBrains Mono',monospace; font-size:48px; font-weight:700; }
+  .ring-center .l{ font-size:11px; letter-spacing:1.5px; color:var(--muted); text-transform:uppercase; margin-top:2px; }
+
+  .manual-row{ display:flex; gap:12px; margin:18px 0 10px; }
+  button{
+    font-family:'Kanit',sans-serif; font-weight:600; font-size:15px; border-radius:10px;
+    border:1px solid var(--line); background:var(--panel-2); color:var(--text);
+    padding:12px 22px; cursor:pointer; letter-spacing:.3px; transition:transform .12s,border-color .12s,background .12s;
+  }
+  button:hover{ border-color:var(--amber); transform:translateY(-2px); }
+  .btn-primary{ background:var(--amber); color:#1A1300; border-color:var(--amber); font-weight:700; }
+  .btn-primary:hover{ background:#ffb84a; }
+  .btn-ghost{ background:transparent; font-size:14px; padding:10px 16px; color:var(--muted); }
+
+  /* ===== Card Reveals ===== */
+  .reveal-stack{ width:100%; display:flex; flex-direction:column; gap:20px; margin-top:20px; }
+  .reveal{ border-radius:16px; overflow:hidden; border:1px solid var(--line); background:#0B0E14; box-shadow:0 10px 30px rgba(0,0,0,0.5); }
+  .reveal.bankrupt{ border-color:rgba(228,87,46,.8); box-shadow:0 0 0 2px rgba(228,87,46,.3), 0 0 50px rgba(228,87,46,.2); }
+  .reveal-head{ display:flex; justify-content:space-between; align-items:center; padding:12px 26px;
+    background:var(--panel-2); font-family:'JetBrains Mono',monospace; font-size:12px; color:var(--muted);
+    letter-spacing:1.5px; text-transform:uppercase; }
+  .reveal-body{ padding:36px 30px; perspective:900px; }
+  
+  .split-body{ display:flex; align-items:stretch; perspective:900px; }
+  .split-half{ flex:1; padding:28px 22px; text-align:center; position:relative; display:flex; flex-direction:column; align-items:center; }
+  .half-crisis{ background:rgba(228,87,46,.08); }
+  .half-recovery{ background:rgba(47,191,159,.08); }
+  .half-auction{ background:rgba(255,215,0,.08); }
+  .half-poach{ background:rgba(168,85,247,.08); }
+
+  .split-arrow{
+    width:50px; display:flex; align-items:center; justify-content:center;
+    font-size:22px; color:var(--muted); position:relative; flex-shrink:0;
+  }
+  .split-arrow::before, .split-arrow::after{
+    content:''; position:absolute; left:50%; width:1px; background:var(--line);
+  }
+  .split-arrow::before{ top:0; height:calc(50% - 24px); }
+  .split-arrow::after{ bottom:0; height:calc(50% - 24px); }
+  .split-arrow span{
+    width:42px; height:42px; border-radius:50%; background:var(--panel-2); border:1px solid var(--line);
+    display:flex; align-items:center; justify-content:center; z-index:1; animation:spin 4s linear infinite;
+  }
+  @keyframes spin{ from{transform:rotate(0);} to{transform:rotate(360deg);} }
+  
+  .split-tag{ font-family:'Kanit',sans-serif; font-size:13px; font-weight:600;
+    color:var(--amber); margin-top:auto; padding-top:10px; border-top:1px dashed var(--line); width:100%; }
+
+  .flap{ display:inline-block; transform-origin:bottom center; animation:flap-in .5s cubic-bezier(.2,.8,.3,1) both; }
+  @keyframes flap-in{ 0%{transform:rotateX(-85deg);opacity:0;} 60%{transform:rotateX(8deg);opacity:1;} 100%{transform:rotateX(0);opacity:1;} }
+  
+  .cat-badge{ display:inline-block; font-family:'Kanit',sans-serif; font-weight:800; font-size:15px;
+    letter-spacing:2px; text-transform:uppercase; padding:6px 20px; border-radius:22px; margin-bottom:12px; }
+  .cat-LAYOFF, .cat-TERMINATE{ background:rgba(228,87,46,.18); color:var(--red); border:1px solid rgba(228,87,46,.5); }
+  .cat-RECRUIT{ background:rgba(47,191,159,.18); color:var(--teal); border:1px solid rgba(47,191,159,.5); }
+  .cat-ENV{ background:rgba(108,142,173,.2); color:var(--blue); border:1px solid rgba(108,142,173,.5); }
+  .cat-BANKRUPT{ background:rgba(228,87,46,.25); color:#ff8a68; border:1px solid rgba(228,87,46,.8); }
+  .cat-AUCTION{ background:rgba(255,215,0,.2); color:var(--gold); border:1px solid rgba(255,215,0,.6); }
+  .cat-POACH{ background:rgba(168,85,247,.2); color:var(--purple); border:1px solid rgba(168,85,247,.6); }
+  .cat-DIVIDEND{ background:rgba(47,191,159,.25); color:var(--teal); border:1px solid rgba(47,191,159,.8); }
+
+  .reveal-main{ font-family:'Kanit',sans-serif; font-weight:800; font-size:32px; line-height:1.25; color:#FFF; }
+  .reveal-sub{ margin-top:10px; color:var(--muted); font-size:16px; line-height:1.5; }
+  .reveal-empty{ color:var(--muted); font-size:16px; padding:30px 0; }
+  .reveal-empty .big{ font-size:22px; color:var(--text); font-family:'Kanit',sans-serif; font-weight:700; margin-bottom:8px; }
+
+  .handover-box{
+    margin-top:10px; padding:8px 12px; background:rgba(245,166,35,0.1); border:1px solid rgba(245,166,35,0.3);
+    border-radius:8px; font-size:12.5px; color:var(--amber); font-weight:600; text-align:left; width:100%;
+  }
+
+  .strict-rule-box{
+    margin-top:10px; padding:8px 12px; background:rgba(228,87,46,0.12); border:1px solid rgba(228,87,46,0.4);
+    border-radius:8px; font-size:13px; color:#ff8a68; font-weight:700; text-align:left; width:100%;
+  }
+
+  .penalty-box{
+    margin-top:10px; padding:10px 14px; background:rgba(228,87,46,0.22); border:1px solid var(--red);
+    border-radius:8px; font-size:13px; color:#FFB4A2; text-align:left; width:100%; box-shadow:0 4px 12px rgba(228,87,46,0.15);
+  }
+  .penalty-title{ font-family:'Kanit',sans-serif; font-weight:800; color:#FF6B4A; font-size:13.5px; margin-bottom:3px; display:flex; align-items:center; gap:6px; }
+
+  /* ===== Ticker ===== */
+  .ticker-wrap{ border-top:1px solid var(--line); margin-top:30px; overflow:hidden; background:var(--panel); }
+  .ticker-track{ display:flex; gap:48px; white-space:nowrap; padding:12px 0; animation:scroll 35s linear infinite; }
+  .ticker-track:hover{ animation-play-state:paused; }
+  @keyframes scroll{ 0%{ transform:translateX(0);} 100%{ transform:translateX(-50%);} }
+  .tick-item{ font-family:'JetBrains Mono',monospace; font-size:13px; color:var(--muted); display:flex; gap:10px; align-items:center; }
+  .tick-tag{ font-size:10px; letter-spacing:.5px; padding:3px 8px; border-radius:4px; text-transform:uppercase; font-weight:700; }
+
+  /* ===== Settings Drawer ===== */
+  .overlay{ position:fixed; inset:0; background:rgba(8,10,14,.6); opacity:0; pointer-events:none; transition:opacity .2s; z-index:120; }
+  .overlay.open{ opacity:1; pointer-events:auto; }
+  .drawer{
+    position:fixed; top:0; right:-420px; width:400px; height:100%; background:var(--panel);
+    border-left:1px solid var(--line); z-index:121; transition:right .25s ease; padding:24px; overflow-y:auto;
+  }
+  .drawer.open{ right:0; }
+  .drawer h3{ font-family:'Kanit',sans-serif; font-size:16px; margin:0 0 18px; text-transform:uppercase; color:var(--amber); }
+  .drawer h4{ font-family:'Kanit',sans-serif; font-size:13px; letter-spacing:1px; text-transform:uppercase; color:var(--muted); margin:22px 0 10px; }
+  .config-row{ display:flex; align-items:center; justify-content:space-between; gap:10px; padding:10px 0; border-bottom:1px solid var(--line); font-size:13.5px; }
+  .config-row label{ color:var(--muted); }
+  select, input[type=number], input[type=text]{
+    background:var(--panel-2); border:1px solid var(--line); color:var(--text);
+    border-radius:6px; padding:8px 10px; font-family:'JetBrains Mono',monospace; font-size:13px;
+  }
+  input[type=text]{ width:100%; margin-bottom:10px; }
+  .bankrupt-box{ background:rgba(228,87,46,.08); border:1px solid rgba(228,87,46,.3); border-radius:8px; padding:14px; }
+  .dividend-box{ background:rgba(47,191,159,.08); border:1px solid rgba(47,191,159,.3); border-radius:8px; padding:14px; margin-top:8px; }
+  .btn-bankrupt{ width:100%; background:rgba(228,87,46,.2); border-color:rgba(228,87,46,.6); color:#ff8a68; font-weight:700; }
+  .btn-bankrupt:hover{ border-color:var(--red); background:rgba(228,87,46,.3); }
+  .btn-dividend-trigger{ width:100%; background:var(--teal); border-color:var(--teal); color:#0B0E14; font-weight:700; margin-top:10px; }
+  .btn-dividend-trigger:hover{ background:#3cd8b5; }
+  .close-drawer{ position:absolute; top:20px; right:18px; }
+
+  /* ===== Tab Nav ===== */
+  .tabbar{
+    display:flex; gap:8px; justify-content:center; padding:16px 24px 0;
+    max-width:1100px; margin:0 auto;
+  }
+  .tab-btn{
+    font-family:'Kanit',sans-serif; font-weight:700; font-size:14px; letter-spacing:.4px;
+    border:1px solid var(--line); background:var(--panel); color:var(--muted);
+    padding:11px 24px; border-radius:12px 12px 0 0; cursor:pointer; transition:all .15s;
+    border-bottom:none; position:relative; top:1px;
+  }
+  .tab-btn:hover{ color:var(--text); border-color:var(--amber); }
+  .tab-btn.active{ color:#FFF; background:var(--panel-2); border-color:var(--teal); box-shadow:0 -4px 16px rgba(47,191,159,.15); }
+  .view{ display:none; }
+  .view.active{ display:block; }
+
+  /* ===== Ranking View ===== */
+  .ranking-wrap{ max-width:1100px; margin:0 auto; padding:26px 24px 40px; }
+  .rk-section-title{ font-family:'JetBrains Mono',monospace; font-size:13px; letter-spacing:2px;
+    color:var(--muted); text-transform:uppercase; margin-bottom:16px; text-align:center; }
+
+  /* ---- Team manager form ---- */
+  .team-manager{ background:var(--panel); border:1px solid var(--line); border-radius:16px; padding:22px 24px; margin-bottom:34px; }
+  .team-add-row{ display:flex; gap:10px; margin-bottom:16px; flex-wrap:wrap; }
+  .team-add-row input[type=text]{ flex:2; min-width:160px; margin-bottom:0; }
+  .team-add-row input[type=number]{ flex:1; min-width:120px; width:auto; }
+  .team-list{ display:flex; flex-direction:column; gap:10px; max-height:420px; overflow-y:auto; }
+  .team-row{
+    display:flex; align-items:center; gap:10px; background:var(--panel-2); border:1px solid var(--line);
+    border-radius:10px; padding:10px 12px;
+  }
+  .team-row input[type=text]{ flex:2; min-width:0; margin-bottom:0; }
+  .team-row input[type=number]{ flex:1; min-width:0; width:auto; }
+  .team-row-swatch{ width:10px; height:32px; border-radius:4px; flex-shrink:0; }
+  .team-row-del{
+    width:34px; height:34px; border-radius:8px; border:1px solid rgba(228,87,46,.4);
+    background:rgba(228,87,46,.12); color:#ff8a68; cursor:pointer; font-size:15px; flex-shrink:0;
+    display:flex; align-items:center; justify-content:center; transition:all .12s;
+  }
+  .team-row-del:hover{ background:rgba(228,87,46,.3); border-color:var(--red); }
+  .team-empty-note{ color:var(--muted); font-size:13.5px; text-align:center; padding:14px 0; }
+
+  /* ---- Podium (top 3) ---- */
+  .podium{ display:flex; align-items:flex-end; justify-content:center; gap:16px; margin-bottom:36px; min-height:260px; }
+  .podium-slot{ display:flex; flex-direction:column; align-items:center; width:180px; }
+  .podium-crown{ font-size:26px; margin-bottom:6px; filter:drop-shadow(0 0 10px rgba(255,215,0,.6)); }
+  .podium-crown.s2, .podium-crown.s3{ filter:none; opacity:.85; }
+  .podium-name{ font-family:'Kanit',sans-serif; font-weight:800; font-size:16px; color:#FFF; text-align:center;
+    margin-bottom:4px; max-width:170px; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
+  .podium-amount{ font-family:'JetBrains Mono',monospace; font-weight:700; font-size:18px; margin-bottom:10px; }
+  .podium-block{
+    width:100%; border-radius:14px 14px 0 0; display:flex; align-items:flex-start; justify-content:center;
+    padding-top:10px; font-family:'Kanit',sans-serif; font-weight:800; font-size:34px; color:rgba(0,0,0,.35);
+    animation:podiumRise .6s cubic-bezier(.2,.8,.3,1) both;
+  }
+  @keyframes podiumRise{ from{ transform:scaleY(0); opacity:0; } to{ transform:scaleY(1); opacity:1; } }
+  .podium-block{ transform-origin:bottom; }
+  .slot-1 .podium-block{ height:180px; background:linear-gradient(180deg,#FFE55C,var(--gold)); box-shadow:0 0 40px rgba(255,215,0,.45), 0 10px 30px rgba(0,0,0,.4); }
+  .slot-2 .podium-block{ height:130px; background:linear-gradient(180deg,#D7DEE8,#9AA7B8); box-shadow:0 8px 24px rgba(0,0,0,.4); }
+  .slot-3 .podium-block{ height:95px; background:linear-gradient(180deg,#E8AD79,#B5793F); box-shadow:0 8px 24px rgba(0,0,0,.4); }
+  .slot-1 .podium-amount{ color:var(--gold); font-size:21px; }
+  .slot-2 .podium-amount{ color:#C4CCD8; }
+  .slot-3 .podium-amount{ color:#D89C63; }
+  .slot-1{ order:2; } .slot-2{ order:1; } .slot-3{ order:3; }
+
+  /* ---- Ranked list (4th onward, or fallback for <3 teams) ---- */
+  .rank-list{ display:flex; flex-direction:column; gap:10px; }
+  .rank-row{
+    display:flex; align-items:center; gap:16px; background:var(--panel); border:1px solid var(--line);
+    border-radius:12px; padding:14px 20px; position:relative; overflow:hidden;
+    animation:rankIn .4s ease both;
+  }
+  @keyframes rankIn{ from{ opacity:0; transform:translateX(-12px); } to{ opacity:1; transform:translateX(0); } }
+  .rank-row::before{
+    content:''; position:absolute; left:0; top:0; bottom:0; width:var(--pct,0%);
+    background:linear-gradient(90deg, rgba(245,166,35,.16), rgba(245,166,35,.02)); z-index:0;
+  }
+  .rank-num{ font-family:'JetBrains Mono',monospace; font-weight:700; font-size:16px; color:var(--muted); width:34px; z-index:1; }
+  .rank-name{ font-family:'Kanit',sans-serif; font-weight:700; font-size:16px; color:var(--text); flex:1; z-index:1; }
+  .rank-amount{ font-family:'JetBrains Mono',monospace; font-weight:700; font-size:17px; color:var(--amber); z-index:1; }
+  .ranking-empty{ text-align:center; color:var(--muted); padding:50px 0; }
+  .ranking-empty .big{ font-family:'Kanit',sans-serif; font-weight:700; font-size:20px; color:var(--text); margin-bottom:8px; }
+
+  /* ---- Excel Import / Export ---- */
+  .import-box{ background:var(--panel); border:1px solid var(--line); border-radius:16px; padding:22px 24px; margin-top:24px; }
+  .import-row{ display:flex; align-items:center; gap:12px; flex-wrap:wrap; margin-bottom:14px; }
+  .file-input-label{
+    display:inline-flex; align-items:center; gap:8px; font-family:'Kanit',sans-serif; font-weight:600; font-size:14px;
+    border:1px dashed var(--line); background:var(--panel-2); color:var(--text);
+    padding:12px 20px; border-radius:10px; cursor:pointer; transition:all .15s;
+  }
+  .file-input-label:hover{ border-color:var(--amber); color:var(--amber); }
+  .file-input-label input{ display:none; }
+  .grade-note{ font-size:12.5px; color:var(--muted); margin-left:auto; }
+  .file-chip-list{ display:flex; flex-wrap:wrap; gap:8px; margin-bottom:16px; }
+  .file-chip{
+    display:flex; align-items:center; gap:8px; background:var(--panel-2); border:1px solid var(--line);
+    border-radius:20px; padding:6px 8px 6px 14px; font-size:12.5px; color:var(--muted); font-family:'JetBrains Mono',monospace;
+  }
+  .file-chip .cnt{ color:var(--teal); font-weight:700; }
+  .file-chip button{
+    width:20px; height:20px; padding:0; border-radius:50%; font-size:11px; line-height:1;
+    background:rgba(228,87,46,.15); border:none; color:#ff8a68;
+  }
+  .import-summary{ font-size:13.5px; color:var(--muted); margin-bottom:14px; }
+  .import-summary b{ color:var(--text); }
+  .preview-table-wrap{ max-height:380px; overflow-y:auto; border:1px solid var(--line); border-radius:10px; margin-bottom:18px; }
+  table.preview-table{ width:100%; border-collapse:collapse; font-size:13px; font-family:'JetBrains Mono',monospace; }
+  table.preview-table th{
+    position:sticky; top:0; background:var(--panel-2); color:var(--muted); text-align:left; padding:8px 12px;
+    font-family:'Kanit',sans-serif; font-weight:700; letter-spacing:.5px; border-bottom:1px solid var(--line); z-index:1;
+  }
+  table.preview-table td{ padding:7px 12px; border-bottom:1px solid rgba(42,51,66,.5); color:var(--text); }
+  table.preview-table tr:last-child td{ border-bottom:none; }
+  .grade-pill{ display:inline-block; padding:2px 10px; border-radius:12px; font-weight:700; font-family:'Kanit',sans-serif; font-size:12.5px; }
+  .grade-A{ background:rgba(93,220,121,.18); color:var(--green); }
+  .grade-Bplus{ background:rgba(47,191,159,.18); color:var(--teal); }
+  .grade-B{ background:rgba(108,142,173,.2); color:var(--blue); }
+  .grade-none{ background:rgba(228,87,46,.18); color:#ff8a68; }
+  .btn-export{ background:var(--gold); border-color:var(--gold); color:#1A1300; font-weight:800; }
+  .btn-export:hover{ background:#ffe066; }
+  .btn-export:disabled{ opacity:.4; cursor:not-allowed; transform:none; }
+</style>
+</head>
+<body>
+
+  <!-- Floating Dividend Banner -->
+  <div class="dividend-banner" id="dividendBanner">
+    <div class="dividend-header">
+      <span class="dividend-tag">💰 DIVIDEND RECOVERY EVENT</span>
+      <button class="close-dividend" id="btnCloseDividend">✕ ซ่อนหน้าต่าง</button>
+    </div>
+    <div class="dividend-title">ประกาศจ่ายเงินปันผลคืนทุกทีม!</div>
+    <div class="dividend-desc" id="dividendDesc">ธนาคารอนุมัติจ่ายเงินปันผลคืนให้ทุกทีม ทีมละ <strong id="divAmountText">1,000</strong> บาท</div>
+    <div class="dividend-timer-box">
+      <span class="dividend-timer-label">ระยะเวลาดำเนินการจ่ายคืนคงเหลือ:</span>
+      <span class="dividend-timer-val" id="divCountdownText">03:00</span>
+    </div>
+  </div>
+
+  <div class="topbar">
+    <div class="brand">
+      <span class="brand-dot" id="statusDot"></span>
+      <div>
+        <div class="brand-title">Crisis & Talent Broadcast</div>
+        <div class="brand-sub">WORKSHOP MANAGEMENT BOARD · 10 TEAMS SIMULATION</div>
+      </div>
+    </div>
+    <div class="top-right">
+      <span class="clock mono" id="clockNow">--:--:--</span>
+      <button class="icon-btn active" id="btnSound" title="เสียงแจ้งเตือน">🔊</button>
+      <button class="icon-btn" id="btnSettings" title="ตั้งค่า">⚙</button>
+    </div>
+  </div>
+
+  <div class="tabbar">
+    <button class="tab-btn active" id="tabBtnBroadcast">📢 บอร์ดประกาศ</button>
+    <button class="tab-btn" id="tabBtnRanking">🏆 Ranking ทีม</button>
+  </div>
+
+  <div class="view active" id="viewBroadcast">
+  <div class="stage">
+    <div class="stage-label">เหตุการณ์ถัดไปในอีก</div>
+    <div class="ring-wrap">
+      <svg width="220" height="220" viewBox="0 0 220 220">
+        <circle class="ring-bg" cx="110" cy="110" r="96"></circle>
+        <circle class="ring-fg" id="ringFg" cx="110" cy="110" r="96" stroke-dasharray="603.1" stroke-dashoffset="0"></circle>
+      </svg>
+      <div class="ring-center">
+        <div class="t mono" id="timeLeft">15:00</div>
+        <div class="l" id="timeLabel">นับถอยหลัง</div>
+      </div>
+    </div>
+
+    <div class="manual-row">
+      <button class="btn-primary" id="btnTrigger">⚡ สุ่มวิกฤต / ประกาศตลาดการเงิน</button>
+      <button class="btn-ghost" id="btnPause">⏸ หยุดชั่วคราว</button>
+    </div>
+
+    <div class="reveal-stack" id="revealStack">
+      <div class="reveal">
+        <div class="reveal-body">
+          <div class="reveal-empty">
+            <div class="big">ระบบพร้อมฉายขึ้นหน้าจอ Slide</div>
+            เมื่อครบเวลา หรือกดปุ่ม "สุ่มวิกฤต" ระบบจะแสดงประกาศกิจกรรมบนหน้าจอ
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="ticker-wrap">
+    <div class="ticker-track" id="tickerTrack">
+      <div class="tick-item"><span>ยังไม่มีประวัติเหตุการณ์</span></div>
+    </div>
+  </div>
+  </div><!-- /viewBroadcast -->
+
+  <div class="view" id="viewRanking">
+    <div class="ranking-wrap">
+
+      <div class="rk-section-title">🏆 อันดับทีมตามยอดเงินคงเหลือ</div>
+      <div id="rankingDisplay"></div>
+
+      <div class="team-manager">
+        <div class="rk-section-title" style="margin-bottom:14px;">⚙ จัดการรายชื่อทีมและยอดเงิน</div>
+        <div class="team-add-row">
+          <input type="text" id="newTeamName" placeholder="ชื่อทีม (เช่น ทีม 1 / Alpha)">
+          <input type="number" id="newTeamAmount" placeholder="ยอดเงินเริ่มต้น" value="0" step="100">
+          <button class="btn-primary" id="btnAddTeam" style="white-space:nowrap;">➕ เพิ่มทีม</button>
+        </div>
+        <div class="team-list" id="teamList"></div>
+      </div>
+
+      <div class="import-box">
+        <div class="rk-section-title" style="margin-bottom:14px;">📥 รวมรายชื่อจากไฟล์ Excel (อัปโหลดได้หลายไฟล์)</div>
+        <div class="import-row">
+          <label class="file-input-label">
+            📎 เลือกไฟล์ Excel (.xlsx)
+            <input type="file" id="excelFileInput" accept=".xlsx,.xls" multiple>
+          </label>
+          <span class="grade-note">A=อันดับ1 · B+=อันดับ2 · B=อันดับ3 ขึ้นไป · คอลัมน์ A=รหัส, B=ชื่อสกุล, C=ชื่อทีม เริ่มอ่านที่แถว 1</span>
+        </div>
+        <div class="file-chip-list" id="fileChipList"></div>
+        <div class="import-summary" id="importSummary">ยังไม่มีไฟล์ที่อัปโหลด</div>
+        <div class="preview-table-wrap" id="previewTableWrap" style="display:none;">
+          <table class="preview-table">
+            <thead><tr><th>รหัสนักศึกษา</th><th>ชื่อ-สกุล</th><th>ชื่อทีม</th><th>เกรด</th></tr></thead>
+            <tbody id="previewTableBody"></tbody>
+          </table>
+        </div>
+        <button class="btn-primary btn-export" id="btnExportResults" disabled>💾 Export ผลลัพธ์ (.xlsx)</button>
+      </div>
+
+    </div>
+  </div><!-- /viewRanking -->
+
+  <div class="overlay" id="overlay"></div>
+  <div class="drawer" id="drawer">
+    <button class="icon-btn close-drawer" id="btnCloseDrawer">✕</button>
+    <h3>ตั้งค่าระบบ Broadcast</h3>
+
+    <h4>รอบเวลา</h4>
+    <div class="config-row"><label>ความยาวรอบ (วิกฤตหลัก)</label>
+      <select id="cycleSelect">
+        <option value="2700">45 นาที</option>
+        <option value="1800">30 นาที</option>
+        <option value="900" selected>15 นาที (จริง)</option>
+        <option value="300">5 นาที</option>
+        <option value="60">1 นาที (ทดสอบ)</option>
+      </select>
+    </div>
+
+    <h4>ระบบปันผลคืนเงิน (Dividend Recovery)</h4>
+    <div class="dividend-box">
+      <div class="config-row" style="border:none; padding:4px 0;"><label>เปิดปันผลอัตโนมัติ</label>
+        <input type="checkbox" id="divAutoEnable" checked>
+      </div>
+      <div class="config-row"><label>รอบการปันผล (นาที)</label>
+        <input type="number" id="divIntervalInput" value="10" min="1" max="120" style="width:70px;">
+      </div>
+      <div class="config-row"><label>ระยะเวลาจ่ายคืน (นาที)</label>
+        <input type="number" id="divDurationInput" value="3" min="1" max="60" style="width:70px;">
+      </div>
+      <div class="config-row"><label>จำนวนเงินปันผล/ทีม (บาท)</label>
+        <input type="number" id="divAmountInput" value="1000" step="100" style="width:90px;">
+      </div>
+      <button class="btn-dividend-trigger" id="btnDividendManual">💰 ประกาศแทรกปันผลทันที</button>
+    </div>
+
+    <h4>การสุ่มเหตุการณ์</h4>
+    <div class="config-row"><label>ระดับความรุนแรง</label>
+      <select id="modeSelect">
+        <option value="light">เบา — เน้นดึงตัว & เติมเงิน (1 เหตุการณ์)</option>
+        <option value="medium" selected>สมดุล — วิกฤตสลับตลาดการเงิน (1–2 เหตุการณ์)</option>
+        <option value="heavy">หนัก — เน้นวิกฤตหนัก/บังคับย้าย (2–3 เหตุการณ์)</option>
+      </select>
+    </div>
+    <div class="config-row"><label>จำนวนคนสูงสุดตำแหน่งแปรผัน (X)</label>
+      <input type="number" id="maxHeadcount" value="2" min="1" max="5">
+    </div>
+
+    <h4>เสียงแจ้งเตือน</h4>
+    <div class="config-row"><label>ทดสอบเสียงแจ้งเตือน</label>
+      <div style="display:flex; gap:6px;">
+        <button id="btnTestSound" class="btn-ghost" style="padding:6px 10px;font-size:12px;">🚨 ไซเรน</button>
+        <button id="btnTestDivSound" class="btn-ghost" style="padding:6px 10px;font-size:12px;color:var(--teal);border-color:var(--teal);">💰 ปันผล</button>
+      </div>
+    </div>
+
+    <h4>ประกาศพิเศษ (ธนาคาร/HR)</h4>
+    <div class="bankrupt-box">
+      <input type="text" id="bankruptTeam" placeholder="ระบุชื่อ/หมายเลขทีม (เช่น ทีม 3)">
+      <button class="btn-bankrupt" id="btnBankrupt">📢 ประกาศบริษัทล้มละลาย</button>
+    </div>
+  </div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+<script>
+  const POSITIONS_FIXED = [
+    { name:'หัวหน้ากลุ่ม', isFixed:true },
+    { name:'รองหัวหน้ากลุ่ม', isFixed:true },
+    { name:'นัก Presenter', isFixed:true },
+    { name:'นักประสานงาน', isFixed:true },
+    { name:'ฝ่ายบุคคล (HR)', isFixed:true },
+    { name:'ฝ่ายบัญชี', isFixed:true },
+  ];
+  
+  const POSITIONS_VARIABLE = [
+    { name:'นักเขียนโปรแกรม (Developer)', isFixed:false },
+    { name:'นักออกแบบดีไซน์ (Designer)', isFixed:false },
+    { name:'นักทำเอกสาร (Documenter)', isFixed:false },
+    { name:'นักทดสอบระบบ (Tester)', isFixed:false },
+  ];
+
+  const ALL_POSITIONS = [...POSITIONS_FIXED, ...POSITIONS_VARIABLE];
+
+  const ENV_EFFECTS = [
+    'ค่าบริการ Consult เพิ่มขึ้น 10%',
+    'อัตราดอกเบี้ยเงินกู้ธนาคารปรับขึ้น 5%',
+    'ค่าธรรมเนียมซื้อตัวผ่าน HR กลาง เพิ่มขึ้น 10%',
+    'ภาษีประจำรอบการทำงานเพิ่มขึ้น 10% สำหรับทุกทีม',
+    'ธนาคารเปิดวงเงินกู้พิเศษฉุกเฉิน (แต่คิดดอกเบี้ย 2 เท่า)',
+  ];
+
+  const MODES = {
+    light:  { weights:{ LAYOFF:10, TERMINATE:15, RECRUIT:20, ENV:15, AUCTION:20, POACH:20 }, batch:[1,1] },
+    medium: { weights:{ LAYOFF:20, TERMINATE:15, RECRUIT:15, ENV:15, AUCTION:18, POACH:17 }, batch:[1,2] },
+    heavy:  { weights:{ LAYOFF:25, TERMINATE:20, RECRUIT:10, ENV:15, AUCTION:15, POACH:15 }, batch:[2,3] },
+  };
+
+  const CAT_LABEL = { 
+    LAYOFF:'Lay-off / ปลดพนักงาน', 
+    TERMINATE:'Resign / ลาออก', 
+    RECRUIT:'Recruitment / เปิดรับสมัคร', 
+    ENV:'Market Crisis / สภาพแวดล้อม', 
+    BANKRUPT:'Bankruptcy / ล้มละลาย',
+    AUCTION:'Talent Market / ตลาดซื้อขายพนักงาน',
+    POACH:'Headhunting / ยื่นซื้อตัวพนักงาน',
+    DIVIDEND:'Dividend / จ่ายเงินปันผล'
+  };
+
+  let seconds=900, totalSeconds=900, paused=false, reportBatch=0;
+  const history = [];
+  let soundOn = true, audioCtx = null;
+
+  /* ---- Ranking / Team State ---- */
+  const TEAM_COLORS = ['#F5A623','#2FBF9F','#6C8EAD','#A855F7','#E4572E','#5DDC79','#FFD700','#4FC3F7','#F06292','#BA68C8'];
+  let teams = [];
+  let teamSeq = 0;
+  (function loadTeams(){
+    try{
+      const saved = JSON.parse(localStorage.getItem('crisisBoardTeams') || 'null');
+      if(Array.isArray(saved)){
+        teams = saved;
+        teamSeq = teams.reduce((m,t)=>Math.max(m, t.id||0), 0);
+      }
+    }catch(e){ teams = []; }
+  })();
+  function saveTeams(){
+    try{ localStorage.setItem('crisisBoardTeams', JSON.stringify(teams)); }catch(e){}
+  }
+
+  /* ---- Dividend State Variables ---- */
+  let divIntervalSec = 600;
+  let divDurationSec = 180;
+  let divTimerSec = 600;
+  let divActiveSec = 0;
+  let isDivActive = false;
+
+  const ringFg = document.getElementById('ringFg');
+  const CIRC = 2*Math.PI*96;
+  ringFg.style.strokeDasharray = CIRC;
+
+  function rand(arr){ return arr[Math.floor(Math.random()*arr.length)]; }
+  function rint(min,max){ return Math.floor(Math.random()*(max-min+1))+min; }
+  function pad(n){ return n.toString().padStart(2,'0'); }
+  function nowStamp(){ const d=new Date(); return pad(d.getHours())+':'+pad(d.getMinutes()); }
+
+  function weightedPick(weights){
+    const entries = Object.entries(weights);
+    const total = entries.reduce((s,[,w])=>s+w,0);
+    let r = Math.random()*total;
+    for(const [k,w] of entries){ if(r<w) return k; r-=w; }
+    return entries[entries.length-1][0];
+  }
+
+  function updateClock(){
+    const d=new Date();
+    document.getElementById('clockNow').textContent = pad(d.getHours())+':'+pad(d.getMinutes())+':'+pad(d.getSeconds());
+  }
+  function renderRing(){
+    const frac = seconds/totalSeconds;
+    ringFg.style.strokeDashoffset = CIRC*(1-frac);
+    ringFg.classList.toggle('critical', seconds<=10);
+    const m=Math.floor(seconds/60), s=seconds%60;
+    document.getElementById('timeLeft').textContent = pad(m)+':'+pad(s);
+  }
+
+  function tick(){
+    if(paused) return;
+
+    seconds--;
+    if(seconds<0){ fireCrisisSequence(); seconds=totalSeconds; }
+    renderRing();
+
+    const autoDiv = document.getElementById('divAutoEnable').checked;
+    if(autoDiv){
+      divTimerSec--;
+      if(divTimerSec <= 0){
+        triggerDividend();
+        syncDividendSettings();
+      }
+    }
+
+    if(isDivActive){
+      divActiveSec--;
+      if(divActiveSec >= 0){
+        const dm = Math.floor(divActiveSec / 60);
+        const ds = divActiveSec % 60;
+        document.getElementById('divCountdownText').textContent = pad(dm) + ':' + pad(ds);
+        document.getElementById('divCountdownText').style.color = "var(--gold)";
+      } else {
+        isDivActive = false;
+        document.getElementById('divCountdownText').textContent = "หมดเวลาการจ่ายคืน!";
+        document.getElementById('divCountdownText').style.color = "var(--red)";
+      }
+    }
+  }
+
+  function ensureAudio(){
+    if(!audioCtx){ audioCtx = new (window.AudioContext||window.webkitAudioContext)(); }
+    if(audioCtx.state==='suspended') audioCtx.resume();
+  }
+
+  /* ---- เสียงไซเรนสำหรับวิกฤต ---- */
+  function playSiren(){
+    if(!soundOn) return;
+    ensureAudio();
+    const ctx=audioCtx, now=ctx.currentTime, dur=1.4;
+    const osc=ctx.createOscillator(), gain=ctx.createGain();
+    osc.type='sawtooth'; osc.connect(gain); gain.connect(ctx.destination);
+    gain.gain.setValueAtTime(0.0001, now);
+    gain.gain.exponentialRampToValueAtTime(0.25, now+0.05);
+    for(let i=0;i<3;i++){
+      const t0=now+i*0.4;
+      osc.frequency.setValueAtTime(560, t0);
+      osc.frequency.linearRampToValueAtTime(920, t0+0.2);
+      osc.frequency.linearRampToValueAtTime(560, t0+0.4);
+    }
+    gain.gain.setValueAtTime(0.25, now+dur-0.12);
+    gain.gain.exponentialRampToValueAtTime(0.0001, now+dur);
+    osc.start(now); osc.stop(now+dur+0.05);
+  }
+
+  /* ---- เสียงกระดิ่งปันผลสดใสรื่นเริง (Chime Jingle Sound) ---- */
+  function playDividendSound(){
+    if(!soundOn) return;
+    ensureAudio();
+    const ctx = audioCtx;
+    const now = ctx.currentTime;
+    
+    // โน้ตเพลง C Major Arpeggio + High Sparkle (C5, E5, G5, C6)
+    const notes = [523.25, 659.25, 783.99, 1046.50]; 
+    
+    notes.forEach((freq, i) => {
+      const osc = ctx.createOscillator();
+      const gain = ctx.createGain();
+      
+      osc.type = 'sine';
+      osc.frequency.setValueAtTime(freq, now + i * 0.12);
+      
+      // เสียงกังวานนุ่มนวล
+      gain.gain.setValueAtTime(0.0001, now + i * 0.12);
+      gain.gain.linearRampToValueAtTime(0.2, now + i * 0.12 + 0.03);
+      gain.gain.exponentialRampToValueAtTime(0.0001, now + i * 0.12 + 0.8);
+      
+      osc.connect(gain);
+      gain.connect(ctx.destination);
+      
+      osc.start(now + i * 0.12);
+      osc.stop(now + i * 0.12 + 0.85);
+    });
+  }
+
+  /* ---- Dividend Trigger Function ---- */
+  function triggerDividend(){
+    syncDividendSettings();
+    const amount = parseInt(document.getElementById('divAmountInput').value) || 1000;
+    
+    document.getElementById('divAmountText').textContent = amount.toLocaleString();
+    
+    isDivActive = true;
+    divActiveSec = divDurationSec;
+
+    const banner = document.getElementById('dividendBanner');
+    banner.style.display = 'block';
+    
+    // เล่นเสียงปันผลรื่นรมย์
+    playDividendSound();
+
+    history.unshift({ 
+      time: nowStamp(), 
+      cat: 'DIVIDEND', 
+      text: `ประกาศจ่ายปันผลคืนทุกทีม ทีมละ ${amount.toLocaleString()} บาท (ระยะเวลาจ่ายคืน ${Math.floor(divDurationSec/60)} นาที)` 
+    });
+    if(history.length>16) history.length=16;
+    renderTicker();
+  }
+
+  function syncDividendSettings(){
+    const intervalMin = parseInt(document.getElementById('divIntervalInput').value) || 10;
+    const durationMin = parseInt(document.getElementById('divDurationInput').value) || 3;
+    divIntervalSec = intervalMin * 60;
+    divDurationSec = durationMin * 60;
+    divTimerSec = divIntervalSec;
+  }
+
+  function rollOne(mode){
+    const maxX = Math.max(1, Math.min(5, parseInt(document.getElementById('maxHeadcount').value)||2));
+    const cat = weightedPick(mode.weights);
+
+    if(cat === 'ENV'){
+      return { cat, headline: rand(ENV_EFFECTS), sub:'ปรับใช้กับทุกทีมทันทีตามประกาศ' };
+    }
+
+    let pos;
+    if (cat === 'LAYOFF' || cat === 'TERMINATE') {
+      pos = rand(ALL_POSITIONS); 
+    } else {
+      pos = rand(POSITIONS_VARIABLE); 
+    }
+
+    const count = pos.isFixed ? 1 : rint(1, maxX);
+
+    if(cat === 'LAYOFF') return { 
+      cat, 
+      headline: `${pos.name} ถูกปลดออกจากทีม`, 
+      sub: `จำนวน ${count} คน — ต้องออกจากทีมทันที และเข้าสู่ HR Central Pool`,
+      isFixedPos: pos.isFixed,
+      posName: pos.name,
+      needHandover: true 
+    };
+    
+    if(cat === 'TERMINATE') return { 
+      cat, 
+      headline: `${pos.name} ยื่นลาออก`, 
+      sub: `จำนวน ${count} คน — ต้องออกจากทีมทันที และเข้าสู่ HR Central Pool`,
+      isFixedPos: pos.isFixed,
+      posName: pos.name,
+      needHandover: true 
+    };
+
+    if(cat === 'AUCTION') return { 
+      cat, 
+      headline: `ตลาดส่งออกพนักงาน: ${pos.name}`, 
+      sub: `ทีมสามารถส่งพนักงานตำแหน่งนี้ ${count} คน เข้าตลาดกลางเพื่อรับเงินสดเข้าทีมทันที`,
+      isFixedPos: false,
+      needHandover: true 
+    };
+
+    if(cat === 'POACH') return { 
+      cat, 
+      headline: `เปิดโควตายื่นซื้อตัว: ${pos.name}`, 
+      sub: `ทีมสามารถจ่ายเงินค่าชดเชยเพื่อยื่นซื้อตัวพนักงานตำแหน่งนี้ ${count} คน จากทีมอื่นได้`,
+      isFixedPos: false,
+      needHandover: true 
+    };
+
+    return { 
+      cat, 
+      headline: `เปิดรับสมัครเพิ่ม: ${pos.name}`, 
+      sub: `ทีมสามารถติดต่อ HR กลาง เพื่อรับพนักงานตำแหน่งนี้เข้าทีมเพิ่มได้ ${count} คน`,
+      isFixedPos: false 
+    };
+  }
+
+  function rollBatch(){
+    const mode = MODES[document.getElementById('modeSelect').value];
+    const n = rint(mode.batch[0], mode.batch[1]);
+    const results=[]; let attempts=0;
+    while(results.length<n && attempts<20){
+      attempts++;
+      const r = rollOne(mode);
+      if(!results.some(x=>x.cat===r.cat && x.headline===r.headline)) results.push(r);
+    }
+    return results;
+  }
+
+  function renderCards(results){
+    reportBatch++;
+    const stack = document.getElementById('revealStack');
+    stack.innerHTML = results.map((r,i)=>{
+      const idTag = `#${String(reportBatch).padStart(3,'0')} · EVENT ${i+1}/${results.length}`;
+      const handoverNote = r.needHandover ? `<div class="handover-box">⚠️ ข้อบังคับ: ต้องทำ Backup & Handover งานให้เรียบร้อยก่อนย้าย</div>` : '';
+
+      if(r.cat==='LAYOFF' || r.cat==='TERMINATE'){
+        const recoveryTitle = r.isFixedPos 
+          ? `บังคับเปิดรับตำแหน่ง: ${r.posName}` 
+          : `เปิดรับพนักงานเข้าทีม`;
+        
+        const recoverySub = r.isFixedPos 
+          ? `ทีมที่ขาดตำแหน่งบังคับนี้ ให้ยื่นเรื่องรับคนตำแหน่ง ${r.posName} จาก HR Central Pool เข้าทีมทันที ห้ามตำแหน่งว่าง`
+          : `ทีมอื่นสามารถยื่นเรื่องรับคนจาก HR Central Pool เข้าทีมได้ทันที`;
+
+        return `
+          <div class="reveal">
+            <div class="reveal-head"><span>ACTION REQUIRED</span><span>${idTag}</span></div>
+            <div class="split-body">
+              <div class="split-half half-crisis">
+                <div class="cat-badge cat-${r.cat} flap">${CAT_LABEL[r.cat]}</div><br>
+                <div class="reveal-main flap" style="animation-delay:.08s">${r.headline}</div>
+                <div class="reveal-sub flap" style="animation-delay:.16s">${r.sub}</div>
+                <div class="strict-rule-box">🚫 กฎเหล็ก: ไม่อนุญาตให้ย้ายกลับเข้าทีมเดิม</div>
+                ${handoverNote}
+                <div class="penalty-box">
+                  <div class="penalty-title">🚨 บทลงโทษหากละเลย:</div>
+                  หากทีมไม่ส่งพนักงานออกตามประกาศในรอบนี้ จะถูกปรับเงินละเว้นหน้าที่ 500 บาท เข้าธนาคารทันที
+                </div>
+              </div>
+              <div class="split-arrow"><span>🔁</span></div>
+              <div class="split-half half-recovery">
+                <div class="cat-badge cat-RECRUIT flap" style="animation-delay:.1s">ขั้นตอนการรับคนแทน</div><br>
+                <div class="reveal-main flap" style="font-size:24px;animation-delay:.18s">${recoveryTitle}</div>
+                <div class="reveal-sub flap" style="animation-delay:.26s">${recoverySub}</div>
+                <div class="penalty-box" style="margin-top:auto;">
+                  <div class="penalty-title">🚨 โทษตำแหน่งบังคับว่าง:</div>
+                  หากเป็นตำแหน่งบังคับ (1 คน) แล้ว HR ไม่ยื่นเรื่องรับคนใหม่จนปล่อยว่างเกิน 1 รอบ จะต้องจ่าย <b>"ค่าบริการ Outsource ฉุกเฉิน" 500 บาท ให้ธนาคาร</b>
+                </div>
+                <div class="split-tag">📋 ดำเนินการย้ายผ่าน HR กลาง</div>
+              </div>
+            </div>
+          </div>`;
+      }
+
+      if(r.cat==='AUCTION'){
+        return `
+          <div class="reveal">
+            <div class="reveal-head"><span>TALENT & CASH EXCHANGE</span><span>${idTag}</span></div>
+            <div class="split-body">
+              <div class="split-half half-auction">
+                <div class="cat-badge cat-AUCTION flap">ฝั่งทีมส่งออก</div><br>
+                <div class="reveal-main flap" style="animation-delay:.08s">${r.headline}</div>
+                <div class="reveal-sub flap" style="animation-delay:.16s">${r.sub}</div>
+                <div class="strict-rule-box">🚫 กฎเหล็ก: ไม่อนุญาตให้ซื้อคนเดิมกลับเข้าทีมเดิม</div>
+                ${handoverNote}
+              </div>
+              <div class="split-arrow"><span>💰</span></div>
+              <div class="split-half half-recovery">
+                <div class="cat-badge cat-RECRUIT flap" style="animation-delay:.1s">ฝั่งทีมนำเข้า</div><br>
+                <div class="reveal-main flap" style="font-size:24px;animation-delay:.18s">จ่ายเงินสดเพื่อรับคนเข้าทีม</div>
+                <div class="reveal-sub flap" style="animation-delay:.26s">ทีมที่มีเงินสด สามารถประมูลหรือจ่ายเงินเพื่อรับพนักงานตำแหน่งนี้ไปร่วมทีมได้ทันที</div>
+                <div class="penalty-box" style="margin-top:auto;">
+                  <div class="penalty-title">💡 หมายเหตุการดำเนินงาน:</div>
+                  การส่งออก/ประมูลรับคนเป็นสิทธิ์สมัครใจของทีม ไม่มีการลงโทษหากไม่มีการตกลงซื้อขาย
+                </div>
+                <div class="split-tag">📋 ดำเนินการผ่าน HR และ ธนาคารกลาง</div>
+              </div>
+            </div>
+          </div>`;
+      }
+
+      if(r.cat==='POACH'){
+        return `
+          <div class="reveal">
+            <div class="reveal-head"><span>HEADHUNTING EVENT</span><span>${idTag}</span></div>
+            <div class="split-body">
+              <div class="split-half half-poach">
+                <div class="cat-badge cat-POACH flap">ภารกิจ HR ซื้อตัว</div><br>
+                <div class="reveal-main flap" style="animation-delay:.08s">${r.headline}</div>
+                <div class="reveal-sub flap" style="animation-delay:.16s">${r.sub}</div>
+                <div class="strict-rule-box">🚫 กฎเหล็ก: ต้องตกลงค่าชดเชยให้ทีมต้นทางก่อนย้าย</div>
+                ${handoverNote}
+              </div>
+              <div class="split-arrow"><span>🌟</span></div>
+              <div class="split-half half-recovery">
+                <div class="cat-badge cat-RECRUIT flap" style="animation-delay:.1s">ข้อบังคับการทำงาน HR</div><br>
+                <div class="reveal-main flap" style="font-size:24px;animation-delay:.18s">ย้ายทีมทันทีเมื่อดีลสำเร็จ</div>
+                <div class="reveal-sub flap" style="animation-delay:.26s">พนักงานที่ถูกซื้อตัว ต้องย้ายไปร่วมทีมใหม่ทันทีที่ชำระค่าชดเชยเรียบร้อย</div>
+                <div class="penalty-box" style="margin-top:auto;">
+                  <div class="penalty-title">🚨 บทลงโทษหาก HR หาคนไม่ได้:</div>
+                  กรณีที่ทีมมีตำแหน่งนี้ว่างอยู่แล้ว HR ไม่สามารถยื่นซื้อตัวหรือหาคนมาเติมได้ภายในรอบ จะต้องเสีย <b>"ค่าบริการ Outsource ฉุกเฉิน" 500 บาท ให้ธนาคาร</b>
+                </div>
+                <div class="split-tag">📋 ดำเนินการผ่าน HR กลาง</div>
+              </div>
+            </div>
+          </div>`;
+      }
+
+      if(r.cat==='RECRUIT'){
+        return `
+          <div class="reveal">
+            <div class="reveal-head"><span>RECRUITMENT ANNOUNCEMENT</span><span>${idTag}</span></div>
+            <div class="split-body">
+              <div class="split-half half-recovery" style="flex:1.2;">
+                <div class="cat-badge cat-RECRUIT flap">${CAT_LABEL[r.cat]}</div><br>
+                <div class="reveal-main flap" style="animation-delay:.08s">${r.headline}</div>
+                <div class="reveal-sub flap" style="animation-delay:.16s">${r.sub}</div>
+                <div class="strict-rule-box" style="background:rgba(47,191,159,0.12); border-color:var(--teal); color:var(--teal);">
+                  📌 ข้อบังคับ: HR แต่ละทีม "ต้องดำเนินการยื่นเปิดรับสมัคร" กับ HR กลาง
+                </div>
+              </div>
+              <div class="split-arrow"><span>📢</span></div>
+              <div class="split-half half-crisis" style="flex:1;">
+                <div class="cat-badge cat-LAYOFF flap" style="background:rgba(228,87,46,0.15);">กฎและบทลงโทษ</div><br>
+                <div class="penalty-box">
+                  <div class="penalty-title">🚨 บทลงโทษกรณีเพิกเฉย:</div>
+                  หาก HR ไม่ยื่นเรื่องเปิดรับสมัครตามประกาศ ถือว่าละเลยหน้าที่ <b>ถูกปรับเงิน 500 บาท เข้าธนาคาร</b>
+                </div>
+                <div class="penalty-box" style="background:rgba(47,191,159,0.1); border-color:rgba(47,191,159,0.4); color:var(--text); margin-top:10px;">
+                  <div class="penalty-title" style="color:var(--teal);">✅ ข้อยกเว้น:</div>
+                  หาก HR ยื่นเรื่องเปิดรับสมัครแล้ว แต่ใน Central Pool ไม่มีผู้สมัคร/หาคนไม่ได้ <b>"ไม่มีความผิด และ ไม่ต้องเสียเงินปรับ"</b>
+                </div>
+              </div>
+            </div>
+          </div>`;
+      }
+
+      if(r.cat==='BANKRUPT'){
+        return `
+          <div class="reveal bankrupt">
+            <div class="reveal-head"><span>ALERT — COMPANY BANKRUPT</span><span>${idTag}</span></div>
+            <div class="split-body">
+              <div class="split-half half-crisis">
+                <div class="cat-badge cat-BANKRUPT flap">ประกาศล้มละลาย</div><br>
+                <div class="reveal-main flap" style="animation-delay:.08s">${r.headline}</div>
+                <div class="reveal-sub flap" style="animation-delay:.16s">${r.sub}</div>
+                <div class="penalty-box">
+                  <div class="penalty-title">🚨 ผลกระทบการล้มละลาย:</div>
+                  บริษัทถูกยึดทรัพย์สินทั้งหมด สมาชิกทุกคนหมดสิทธิ์ทำโปรเจกต์เดิม และต้องย้ายไป Central Pool
+                </div>
+              </div>
+              <div class="split-arrow"><span>🚨</span></div>
+              <div class="split-half half-recovery">
+                <div class="cat-badge cat-RECRUIT flap" style="animation-delay:.1s">เงื่อนไขการรับคนเข้าทีมอื่น</div><br>
+                <div class="reveal-main flap" style="font-size:24px;animation-delay:.18s">รับได้เฉพาะตำแหน่ง Developer / Designer / Documenter / Tester</div>
+                <div class="reveal-sub flap" style="animation-delay:.26s">ทีมอื่นสามารถดึงตัวเฉพาะตำแหน่งปฏิบัติการเข้าทีมได้ทันที</div>
+                <div class="split-tag">📋 รายงานตัวที่ HR Central Pool</div>
+              </div>
+            </div>
+          </div>`;
+      }
+
+      return `
+        <div class="reveal">
+          <div class="reveal-head"><span>BROADCAST ANNOUNCEMENT</span><span>${idTag}</span></div>
+          <div class="reveal-body">
+            <div class="cat-badge cat-${r.cat} flap">${CAT_LABEL[r.cat]}</div><br>
+            <div class="reveal-main flap" style="animation-delay:.08s">${r.headline}</div>
+            <div class="reveal-sub flap" style="animation-delay:.16s">${r.sub}</div>
+            <div class="penalty-box" style="max-width:600px; margin:16px auto 0;">
+              <div class="penalty-title">🚨 ผลกระทบด้านสภาพแวดล้อม:</div>
+              ทุกทีมต้องปรับเปลี่ยนตัวเลขงบประมาณและการคำนวณในระบบบัญชีทันที หากไม่ปรับตามจะมีผลต่อการตรวจเงินงบประมาณท้ายรอบ
+            </div>
+          </div>
+        </div>`;
+    }).join('');
+
+    results.forEach(r=> history.unshift({ time: nowStamp(), cat:r.cat, text:r.headline }) );
+    if(history.length>16) history.length=16;
+    renderTicker();
+  }
+
+  function fireCrisisSequence(){
+    document.getElementById('statusDot').classList.add('alert');
+    playSiren();
+    setTimeout(()=>{
+      renderCards(rollBatch());
+      document.getElementById('statusDot').classList.remove('alert');
+    }, 900);
+  }
+
+  function renderTicker(){
+    const track = document.getElementById('tickerTrack');
+    if(history.length===0){ track.innerHTML = '<div class="tick-item"><span>ยังไม่มีประวัติเหตุการณ์</span></div>'; return; }
+    const itemsHtml = history.map(h=>{
+      return `<div class="tick-item"><span class="tick-tag">${CAT_LABEL[h.cat]||h.cat}</span><span>${h.time} · ${h.text}</span></div>`;
+    }).join('');
+    track.innerHTML = itemsHtml + itemsHtml;
+  }
+
+  /* ---- Team Manager ---- */
+  function addTeam(name, amount){
+    teamSeq++;
+    teams.push({ id: teamSeq, name: name || `ทีม ${teams.length+1}`, amount: isNaN(amount) ? 0 : amount });
+    saveTeams(); renderTeamManager(); renderRanking(); rebuildMergedRecords();
+  }
+  function removeTeam(id){
+    teams = teams.filter(t=>t.id!==id);
+    saveTeams(); renderTeamManager(); renderRanking(); rebuildMergedRecords();
+  }
+  function updateTeam(id, field, value){
+    const t = teams.find(t=>t.id===id);
+    if(!t) return;
+    t[field] = field==='amount' ? (parseFloat(value)||0) : value;
+    saveTeams(); renderRanking(); rebuildMergedRecords();
+  }
+
+  function renderTeamManager(){
+    const list = document.getElementById('teamList');
+    if(teams.length===0){
+      list.innerHTML = '<div class="team-empty-note">ยังไม่มีทีม — เพิ่มทีมได้ด้านบน (เพิ่มได้ไม่จำกัดจำนวน)</div>';
+      return;
+    }
+    list.innerHTML = teams.map((t,i)=>`
+      <div class="team-row">
+        <div class="team-row-swatch" style="background:${TEAM_COLORS[i%TEAM_COLORS.length]};"></div>
+        <input type="text" value="${t.name.replace(/"/g,'&quot;')}" data-id="${t.id}" data-field="name" class="team-field">
+        <input type="number" value="${t.amount}" step="100" data-id="${t.id}" data-field="amount" class="team-field">
+        <button class="team-row-del" data-id="${t.id}" title="ลบทีมนี้">🗑</button>
+      </div>`).join('');
+
+    list.querySelectorAll('.team-field').forEach(el=>{
+      el.addEventListener('change', function(){
+        updateTeam(parseInt(this.dataset.id), this.dataset.field, this.value);
+      });
+    });
+    list.querySelectorAll('.team-row-del').forEach(btn=>{
+      btn.addEventListener('click', function(){ removeTeam(parseInt(this.dataset.id)); });
+    });
+  }
+
+  function renderRanking(){
+    const el = document.getElementById('rankingDisplay');
+    if(teams.length===0){
+      el.innerHTML = `<div class="ranking-empty"><div class="big">ยังไม่มีข้อมูลทีม</div>เพิ่มชื่อทีมและยอดเงินด้านล่างเพื่อเริ่มจัดอันดับ</div>`;
+      return;
+    }
+    const sorted = [...teams].sort((a,b)=> b.amount - a.amount);
+    const top3 = sorted.slice(0,3);
+    const rest = sorted.slice(3);
+    const maxAmt = sorted[0].amount || 1;
+    const fmt = n => n.toLocaleString('th-TH');
+
+    const crownFor = i => i===0 ? '👑' : i===1 ? '🥈' : '🥉';
+    const podiumHtml = top3.length ? `
+      <div class="podium">
+        ${top3.map((t,i)=>`
+          <div class="podium-slot slot-${i+1}">
+            <div class="podium-crown ${i===0?'':'s'+(i+1)}">${crownFor(i)}</div>
+            <div class="podium-name">${t.name}</div>
+            <div class="podium-amount">${fmt(t.amount)} ฿</div>
+            <div class="podium-block">${i+1}</div>
+          </div>`).join('')}
+      </div>` : '';
+
+    const restHtml = rest.length ? `
+      <div class="rank-list">
+        ${rest.map((t,i)=>{
+          const pct = Math.max(4, Math.round((t.amount/maxAmt)*100));
+          return `
+          <div class="rank-row" style="--pct:${pct}%; animation-delay:${i*0.04}s;">
+            <div class="rank-num">#${i+4}</div>
+            <div class="rank-name">${t.name}</div>
+            <div class="rank-amount">${fmt(t.amount)} ฿</div>
+          </div>`;
+        }).join('')}
+      </div>` : '';
+
+    el.innerHTML = podiumHtml + restHtml;
+  }
+
+  /* ---- Excel Import / Grade / Export ---- */
+  let importedFiles = [];   // [{name, rows:[[id,name,team],...]}]
+  let mergedRecords = [];   // [{id,name,team,grade}]
+
+  function gradeForRank(rank){
+    if(rank===1) return 'A';
+    if(rank===2) return 'B+';
+    return 'B';
+  }
+  function normTeam(s){ return (s||'').toString().trim().toLowerCase().replace(/\s+/g,' '); }
+
+  function computeTeamRankMap(){
+    const sorted = [...teams].sort((a,b)=> b.amount - a.amount);
+    const map = {};
+    sorted.forEach((t,i)=>{ map[normTeam(t.name)] = i+1; });
+    return map;
+  }
+
+  function rebuildMergedRecords(){
+    const rankMap = computeTeamRankMap();
+    mergedRecords = [];
+    importedFiles.forEach(f=>{
+      f.rows.forEach(row=>{
+        const id = row[0]!==undefined && row[0]!==null ? String(row[0]).trim() : '';
+        const name = row[1]!==undefined && row[1]!==null ? String(row[1]).trim() : '';
+        const team = row[2]!==undefined && row[2]!==null ? String(row[2]).trim() : '';
+        if(!id && !name) return; // skip fully empty rows
+        const rank = rankMap[normTeam(team)];
+        const grade = rank ? gradeForRank(rank) : '';
+        mergedRecords.push({ id, name, team, grade });
+      });
+    });
+    renderFileChips();
+    renderImportSummary();
+    renderPreviewTable();
+    document.getElementById('btnExportResults').disabled = mergedRecords.length===0;
+  }
+
+  function renderFileChips(){
+    const wrap = document.getElementById('fileChipList');
+    wrap.innerHTML = importedFiles.map((f,i)=>`
+      <div class="file-chip">
+        📄 ${f.name} · <span class="cnt">${f.rows.length}</span> แถว
+        <button data-idx="${i}" title="ลบไฟล์นี้ออก">✕</button>
+      </div>`).join('');
+    wrap.querySelectorAll('button').forEach(btn=>{
+      btn.addEventListener('click', function(){
+        importedFiles.splice(parseInt(this.dataset.idx), 1);
+        rebuildMergedRecords();
+      });
+    });
+  }
+
+  function renderImportSummary(){
+    const el = document.getElementById('importSummary');
+    if(importedFiles.length===0){ el.innerHTML = 'ยังไม่มีไฟล์ที่อัปโหลด'; return; }
+    const noTeamCount = mergedRecords.filter(r=>!r.grade).length;
+    el.innerHTML = `รวม <b>${importedFiles.length}</b> ไฟล์ · ทั้งหมด <b>${mergedRecords.length}</b> รายชื่อ` +
+      (noTeamCount>0 ? ` · <span style="color:#ff8a68;">⚠️ ${noTeamCount} รายชื่อจับคู่ทีมไม่ได้ (ตรวจชื่อทีมในแท็บ Ranking ด้านบน)</span>` : '');
+  }
+
+  function gradeClass(g){
+    if(g==='A') return 'grade-A';
+    if(g==='B+') return 'grade-Bplus';
+    if(g==='B') return 'grade-B';
+    return 'grade-none';
+  }
+
+  function renderPreviewTable(){
+    const wrap = document.getElementById('previewTableWrap');
+    const body = document.getElementById('previewTableBody');
+    if(mergedRecords.length===0){ wrap.style.display='none'; body.innerHTML=''; return; }
+    wrap.style.display='block';
+    body.innerHTML = mergedRecords.map(r=>`
+      <tr>
+        <td>${r.id}</td>
+        <td>${r.name}</td>
+        <td>${r.team}</td>
+        <td><span class="grade-pill ${gradeClass(r.grade)}">${r.grade || 'ไม่พบทีม'}</span></td>
+      </tr>`).join('');
+  }
+
+  function handleExcelFiles(fileList){
+    const files = Array.from(fileList);
+    let pending = files.length;
+    if(pending===0) return;
+    files.forEach(file=>{
+      const reader = new FileReader();
+      reader.onload = function(e){
+        try{
+          const wb = XLSX.read(new Uint8Array(e.target.result), { type:'array' });
+          const sheet = wb.Sheets[wb.SheetNames[0]];
+          const rows = XLSX.utils.sheet_to_json(sheet, { header:1, raw:false, defval:'' });
+          importedFiles.push({ name: file.name, rows });
+        }catch(err){
+          alert(`ไม่สามารถอ่านไฟล์ ${file.name} ได้: ${err.message}`);
+        }
+        pending--;
+        if(pending===0) rebuildMergedRecords();
+      };
+      reader.readAsArrayBuffer(file);
+    });
+  }
+
+  function exportResults(){
+    if(mergedRecords.length===0) return;
+    const aoa = mergedRecords.map(r=>[r.id, r.name, r.team, r.grade]);
+    const ws = XLSX.utils.aoa_to_sheet(aoa);
+    ws['!cols'] = [{wch:14},{wch:26},{wch:16},{wch:8}];
+    const wb = XLSX.utils.book_new();
+    XLSX.utils.book_append_sheet(wb, ws, 'Ranking Result');
+    const d = new Date();
+    const stamp = `${d.getFullYear()}${pad(d.getMonth()+1)}${pad(d.getDate())}_${pad(d.getHours())}${pad(d.getMinutes())}`;
+    XLSX.writeFile(wb, `Ranking_Grade_${stamp}.xlsx`);
+  }
+
+  document.getElementById('excelFileInput').addEventListener('change', function(){
+    handleExcelFiles(this.files);
+    this.value = '';
+  });
+  document.getElementById('btnExportResults').addEventListener('click', exportResults);
+
+  /* ---- Tab Switching ---- */
+  function switchTab(tab){
+    const isBroadcast = tab==='broadcast';
+    document.getElementById('viewBroadcast').classList.toggle('active', isBroadcast);
+    document.getElementById('viewRanking').classList.toggle('active', !isBroadcast);
+    document.getElementById('tabBtnBroadcast').classList.toggle('active', isBroadcast);
+    document.getElementById('tabBtnRanking').classList.toggle('active', !isBroadcast);
+    if(!isBroadcast) renderRanking();
+  }
+  document.getElementById('tabBtnBroadcast').addEventListener('click', ()=>switchTab('broadcast'));
+  document.getElementById('tabBtnRanking').addEventListener('click', ()=>switchTab('ranking'));
+
+  document.getElementById('btnAddTeam').addEventListener('click', ()=>{
+    const nameInput = document.getElementById('newTeamName');
+    const amountInput = document.getElementById('newTeamAmount');
+    addTeam(nameInput.value.trim(), parseFloat(amountInput.value));
+    nameInput.value = ''; amountInput.value = '0';
+    nameInput.focus();
+  });
+  document.getElementById('newTeamName').addEventListener('keydown', e=>{
+    if(e.key==='Enter') document.getElementById('btnAddTeam').click();
+  });
+  document.getElementById('newTeamAmount').addEventListener('keydown', e=>{
+    if(e.key==='Enter') document.getElementById('btnAddTeam').click();
+  });
+
+  renderTeamManager(); renderRanking();
+
+  /* ---- Event Handlers ---- */
+  document.getElementById('btnTrigger').addEventListener('click', ()=>{
+    ensureAudio();
+    fireCrisisSequence();
+    seconds = totalSeconds; renderRing();
+  });
+  document.getElementById('btnPause').addEventListener('click', function(){
+    paused = !paused; this.textContent = paused ? '▶ เล่นต่อ' : '⏸ หยุดชั่วคราว';
+  });
+  document.getElementById('cycleSelect').addEventListener('change', function(){
+    totalSeconds = parseInt(this.value); seconds = totalSeconds; renderRing();
+  });
+  document.getElementById('btnSound').addEventListener('click', function(){
+    ensureAudio(); soundOn = !soundOn;
+    this.classList.toggle('active', soundOn);
+    this.textContent = soundOn ? '🔊' : '🔇';
+  });
+  document.getElementById('btnTestSound').addEventListener('click', ()=>{ ensureAudio(); playSiren(); });
+  document.getElementById('btnTestDivSound').addEventListener('click', ()=>{ ensureAudio(); playDividendSound(); });
+
+  document.getElementById('btnCloseDividend').addEventListener('click', ()=>{
+    document.getElementById('dividendBanner').style.display = 'none';
+  });
+
+  document.getElementById('btnDividendManual').addEventListener('click', ()=>{
+    ensureAudio();
+    triggerDividend();
+    closeDrawer();
+  });
+
+  document.getElementById('divIntervalInput').addEventListener('change', syncDividendSettings);
+  document.getElementById('divDurationInput').addEventListener('change', syncDividendSettings);
+
+  document.getElementById('btnBankrupt').addEventListener('click', ()=>{
+    const teamInput = document.getElementById('bankruptTeam').value.trim();
+    const teamLabel = teamInput ? `บริษัท/ทีม "${teamInput}"` : 'บริษัทที่ไม่ชำระหนี้';
+    ensureAudio();
+    document.getElementById('statusDot').classList.add('alert');
+    playSiren();
+    setTimeout(()=>{
+      renderCards([{ 
+        cat:'BANKRUPT', 
+        headline:`${teamLabel} ล้มละลาย!`, 
+        sub:'ชำระหนี้ธนาคารไม่ทันตามกำหนด — สมาชิกทุกคนเข้าสู่ HR Central Pool ทันที' 
+      }]);
+      document.getElementById('statusDot').classList.remove('alert');
+    }, 900);
+    document.getElementById('bankruptTeam').value='';
+    closeDrawer();
+  });
+
+  const drawer = document.getElementById('drawer'), overlay = document.getElementById('overlay');
+  function openDrawer(){ drawer.classList.add('open'); overlay.classList.add('open'); }
+  function closeDrawer(){ drawer.classList.remove('open'); overlay.classList.remove('open'); }
+  document.getElementById('btnSettings').addEventListener('click', openDrawer);
+  document.getElementById('btnCloseDrawer').addEventListener('click', closeDrawer);
+  overlay.addEventListener('click', closeDrawer);
+
+  syncDividendSettings();
+  renderRing(); renderTicker(); updateClock();
+  setInterval(updateClock, 1000);
+  setInterval(tick, 1000);
+</script>
+</body>
+</html>
