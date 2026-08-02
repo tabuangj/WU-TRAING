@@ -46,12 +46,12 @@
 
 ## 2. 👨‍🏫 วิทยากรประจำโครงการ (Instructors)
 
-1. **คุณเพชร ชายมัน (Pech Chaiman)**
+1. **คุณเพชร ไชยหมาน (Pech Chaimarn)**
    * **ตำแหน่งปัจจุบัน:** Senior Developer at The Virus Information and Technology
    * **ประวัติการศึกษา:** Digital Information Management (DIM Generation 2) 2017
    * **ประสบการณ์:** เจ้าพนักงานธุรการ (2019 - 2024) โรงพยาบาลส่งเสริมสุขภาพตำบลบ้านพรุ
 
-2. **คุณตะบวง จันดาม (Tabuang Jandam)**
+2. **คุณทบวง จันทร์ดำ (Tabuang Chandam)**
    * **ตำแหน่งปัจจุบัน:** Technical Project Manager at Fujitsu Thailand
    * **ประวัติการศึกษา:** Digital Information Management (DIM Generation 2) 2017
    * **ประสบการณ์:** Senior Department Manager (2019 - 2021) at Central Group, Scrum Master (2021 - 2023) at FWD Thailand
@@ -99,9 +99,12 @@
   3. **Control Flow (IF...ELSE):** การตัดสินใจทางเลือก
   4. **Loops (For Loop):** การทำงานซ้ำ `for (let i = 1; i <= 5; i++)`
   5. **แบบทดสอบท้ายบท (Grade Calculation Exercise):** เขียนโปรแกรมคำนวณเกรดจาก Array คะแนนนักศึกษา 5 คน โดยมีเกณฑ์:
-     * คะแนน $\ge 80 ightarrow$ เกรด A
-     * $60 \le 	ext{คะแนน} < 80 ightarrow$ เกรด B
-     * คะแนน $< 60 ightarrow$ ต้องพัฒนาเพิ่มเติม
+     * คะแนน $\ge 80 
+ightarrow$ เกรด A
+     * $60 \le 	ext{คะแนน} < 80 
+ightarrow$ เกรด B
+     * คะแนน $< 60 
+ightarrow$ ต้องพัฒนาเพิ่มเติม
 
 ---
 
@@ -192,9 +195,12 @@
    * รองรับการอัปโหลดไฟล์รายชื่อนักศึกษา `.xlsx` ได้พร้อมกันหลายไฟล์
    * อ่านข้อมูลจาก Col A (รหัส), Col B (ชื่อ-สกุล), Col C (ชื่อทีม)
    * **จับคู่อันดับทีมและตัดเกรดให้อัตโนมัติ:**
-     * **ทีมอันดับ 1** $ightarrow$ ได้เกรด **A**
-     * **ทีมอันดับ 2** $ightarrow$ ได้เกรด **B+**
-     * **ทีมอันดับ 3 ขึ้นไป** $ightarrow$ ได้เกรด **B**
+     * **ทีมอันดับ 1** $
+ightarrow$ ได้เกรด **A**
+     * **ทีมอันดับ 2** $
+ightarrow$ ได้เกรด **B+**
+     * **ทีมอันดับ 3 ขึ้นไป** $
+ightarrow$ ได้เกรด **B**
    * ปุ่ม **Export Results (.xlsx)** ส่งออกไฟล์สรุปผลเกรดนักศึกษาทุกคนทันที
 
 ---
